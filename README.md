@@ -13,7 +13,7 @@ import Renderer, { Drag } from '@fhrk-78/tmlib_ctx2d'
 
 const r = new Renderer('#map')
   .init({ resizeTo: window })
-  .start(60)
+  .start(120)
 
 r.onRender.register((c) => {
   // c is RenderingContext2d
@@ -27,13 +27,18 @@ r.onRender.register((c) => {
 ドラッグを可能にする
 
 ```ts
-const drag = new Drag()
 const r = new Renderer('#map')
   .init({ resizeTo: window })
-  .use([ drag ])
+  .use([ new Drag() ])
   .start(60)
 
-drag.dragOnRender.register((c) => {
-  // c.ctx is RenderingContext2d, c.x & c.y is position
+r.onRender.register(c => {
+  if (Drag.hasRelayType(c.data)) {
+    const drag: DragRelayData = c.data.drag
+
+    c.ctx.fillStyle = 'red'
+    const [x, y, w, h] = [11.4, 51.4, 81.0, 36.4]
+    c.ctx.fillRect(drag.x + x, drag.y + y, w, h)
+  }
 })
 ```

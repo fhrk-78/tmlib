@@ -52,4 +52,26 @@ export default class Drag implements TMLibPlugin {
       this.isDragging = false;
     }
   }
+
+  public relay(data: any) {
+    return {
+      ...data,
+      drag: {
+        x: this.x,
+        y: this.y,
+        isDragging: this.isDragging
+      } as DragRelayData
+    }
+  }
+
+  public static hasRelayType(data: any): boolean {
+    return data !== undefined && data.drag !== undefined && data.drag.x !== undefined && typeof data.drag.x === 'number' && data.drag.y !== undefined &&
+      typeof data.drag.y === 'number' && data.drag.isDragging !== undefined && typeof data.drag.isDragging === 'boolean'
+  }
+}
+
+export type DragRelayData = {
+  x: number;
+  y: number;
+  isDragging: boolean;
 }
