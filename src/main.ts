@@ -1,4 +1,3 @@
-import './style.css'
 import Renderer from '../lib/main'
 import Drag from './../lib/plugins/drag'
 
