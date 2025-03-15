@@ -1,4 +1,7 @@
 import { SyncEvent, AsyncEvent } from './utils'
+import Drag from './plugins/drag'
+
+export { Drag }
 
 export type TMLibInitializeOptions = {
   resizeTo?: HTMLElement | Window

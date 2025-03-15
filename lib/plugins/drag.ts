@@ -17,6 +17,9 @@ export default class Drag implements TMLibPlugin {
   public x = 0
   public y = 0
 
+  /**
+   * @deprecated
+   */
   public dragOnRender = new SyncEvent<DragPluginRenderer, void>()
 
   public onRender = (c: CanvasRenderingContext2D) => {
