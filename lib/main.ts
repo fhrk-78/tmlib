@@ -1,4 +1,7 @@
 import { SyncEvent, AsyncEvent } from './utils'
+import Drag from './plugins/drag'
+
+export { Drag }
 
 export type TMLibInitializeOptions = {
   resizeTo?: HTMLElement | Window
@@ -10,6 +13,12 @@ export interface TMLibPlugin {
   onAfterRender?: (c:CanvasRenderingContext2D) => Promise<void>
 
   init?: (r: Renderer) => void
+  relay?: (data: any) => any
+}
+
+export type RenderCallback = {
+  ctx: CanvasRenderingContext2D,
+  data: any
 }
 
 /**
@@ -48,10 +57,13 @@ export default class Renderer {
   }
 
   public onBeforeRender = new SyncEvent<CanvasRenderingContext2D, void>()
-  public onRender = new SyncEvent<CanvasRenderingContext2D, void>()
-  public onAfterRender = new AsyncEvent<CanvasRenderingContext2D, void>()
+  public onRender = new SyncEvent<RenderCallback, void>()
+  public onAfterRender = new AsyncEvent<RenderCallback, void>()
+
+  private plugins: TMLibPlugin[] = []
 
   public render(): Renderer {
+    this.plugins.forEach(plugin => plugin.onRender?.(this.ctx))
     this.onBeforeRender.emit(this.ctx)
 
     if (this.options.resizeTo) {
@@ -68,9 +80,14 @@ export default class Renderer {
       }
     }
 
-    this.onRender.emit(this.ctx)
+    let relay: any = {}
 
-    this.onAfterRender.emit(this.ctx)
+    this.plugins.forEach(plugins => plugins.onRender?.(this.ctx))
+    this.plugins.forEach(plugins => relay = plugins.relay?.(relay))
+    this.onRender.emit({ ctx: this.ctx, data: relay })
+
+    this.plugins.forEach(plugins => plugins.onAfterRender?.(this.ctx))
+    this.onAfterRender.emit({ ctx: this.ctx, data: relay })
     return this
   }
 
@@ -85,12 +102,7 @@ export default class Renderer {
     } else {
       if (plugin.init)
         plugin.init(this)
-      if (plugin.onBeforeRender)
-        this.onBeforeRender.register(plugin.onBeforeRender)
-      if (plugin.onRender)
-        this.onRender.register(plugin.onRender)
-      if (plugin.onAfterRender)
-        this.onAfterRender.register(plugin.onAfterRender)
+      this.plugins.push(plugin)
       return this
     }
   }
